@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=utf-8">
+    <title>网络图</title>
+    <script src="d3.v5.js"></script>
+    <!--<script src="saveSvgAsPng.js"></script>-->
+    <script src="color.js"></script>
+    <script src="force-chart.js"></script>
+    <style type="text/css">
+
+            /* 主标题 */
+            .title {
+              font: 30px Arial;
+              fill: #00F;
+            }
+
+            /* 节点图例标题 */
+            .legend_title {
+              font: 20px monospace;
+              fill: #958623;
+            }
+
+            /* 连线图例标题 */
+            .linklegend_title {
+              font: 20px monospace;
+              fill: #958623;
+            }
+
+            /* 节点图例标签 */
+            .legend {
+              font: 15px sans-serif;
+              font-style: italic;
+            }
+
+            /* 连线图例标签 */
+            .linklegend {
+              font: 15px sans-serif;
+            }
+
+    </style>
+  </head>
+  <body>
+    <table border="0">
+	<tr>
+      <td>JSON: </td>
+      <td><input type='file' id='jsonfile' style="width:300px" /></td>
+    </tr>
+    <tr>
+      <td>Node: </td>
+        <td><select id="nodecolor" value="NPG" style="width:100px">
+          <option value="NPG">NPG</option>
+          <option value="NEJM">NEJM</option>
+          <option value="JAMA">JAMA</option>
+          <option value="Lancet">Lancet</option>
+          <option value="AAAS">AAAS</option>
+          <option value="report">report</option>
+          <option value="DEF">DEF</option>
+        </select></td>
+    </tr>
+    <tr>
+      <td>Link: </td>
+        <td><select id="linkcolor" value="BrBG" style="width:100px">
+          <option value="BrBG">BrBG</option>
+          <option value="PiYG">PiYG</option>
+          <option value="RdBu">RdBu</option>
+          <option value="bl2rd">bl2rd</option>
+          <option value="gnbu">gnbu</option>
+          <option value="matlablike">matlablike</option>
+          <option value="Gwr">Gwr</option>
+          <option value="Bwr">Bwr</option>
+        </select></td>
+    </tr>
+    <tr>
+      <td>Top: </td>
+      <td><input type="number" id="top" placeholder="" value="10" min="1" max="20" style="width:94px" /> (1:20)</td>
+    </tr>
+	</table>
+	<!--<input type='button' id='btnLoad' value='Load' onclick='loadFile();'>-->
+    <div id='container' style="width:880px; height:730px"></div>
+    <script>
+	  var mtitle = "Title"; //主标题内容
+      var ltitle1 = "Node"; //节点图例标题内容
+      var ltitle2 = "Link"; //连线图例标题内容
+
+      function handleFileSelect(evt) {
+	    file = evt.target.files[0];
+        fr = new FileReader();
+        fr.onload = receivedText;
+        fr.readAsText(file);
+
+        function receivedText(e) {
+          var lines = e.target.result;
+          json = JSON.parse(lines);
+          d3.select('#container').selectAll("svg").remove();
+          var top = document.getElementById("top").value;
+          var nodecolor = document.getElementById("nodecolor").value;
+          var linkcolor = document.getElementById("linkcolor").value;
+          d3.select('#container').append(() => chart(json, window[nodecolor], window[linkcolor], mtitle, ltitle1, ltitle2, top));
+        }
+      }
+
+      function paraSelect(e) {
+        d3.select('#container').selectAll("svg").remove();
+        var top = document.getElementById("top").value;
+        var nodecolor = document.getElementById("nodecolor").value;
+        var linkcolor = document.getElementById("linkcolor").value;
+        d3.select('#container').append(() => chart(json, window[nodecolor], window[linkcolor], mtitle, ltitle1, ltitle2, top));
+      }
+
+	  document.getElementById('jsonfile').addEventListener('change', handleFileSelect, false);
+	  document.getElementById('top').addEventListener('change', paraSelect, false);
+	  document.getElementById('nodecolor').addEventListener('change', paraSelect, false);
+	  document.getElementById('linkcolor').addEventListener('change', paraSelect, false);
+	
+	</script>
+  </body>
+</html>
