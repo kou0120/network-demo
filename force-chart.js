@@ -25,8 +25,7 @@ function chart(data, ncolor, ecolor, mtitle, ltitle, lltitle, topn, fontFamily){
     .force("y", d3.forceY());
 
   const svg = d3.create("svg")
-    .attr("viewBox", [(-width + rmargin) / 2, -(height + tmargin) / 2, width, height])
-    .style("font-family", fontFamily);
+    .attr("viewBox", [(-width + rmargin) / 2, -(height + tmargin) / 2, width, height]);
 
   const link = svg.append("g")
     .attr("class", "links")
@@ -139,7 +138,8 @@ function chart(data, ncolor, ecolor, mtitle, ltitle, lltitle, topn, fontFamily){
     .data(color.domain())
     .enter().append("g")
     .attr("class", "legend")
-    .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+    .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; })
+    .style("font-family", fontFamily);
 
   legend.append("rect")
     .attr("x", (width - rmargin) / 2)
@@ -160,7 +160,8 @@ function chart(data, ncolor, ecolor, mtitle, ltitle, lltitle, topn, fontFamily){
     .data(['-1.0', '-0.9', '-0.8', '-0.7', '0.7', '0.8', '0.9', '1.0'])
     .enter().append("g")
     .attr("class", "linklegend")
-    .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+    .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; })
+    .style("font-family", fontFamily);
 
   linklegend.append("line")
     .attr("x1", (width - rmargin) / 2)
@@ -187,7 +188,8 @@ function chart(data, ncolor, ecolor, mtitle, ltitle, lltitle, topn, fontFamily){
 
   /* 主标题 */
   const title = svg.append("g")
-    .attr("class", "title");
+    .attr("class", "title")
+    .style("font-family", fontFamily);
 
   title.append("text")
     .attr("x", 0)             
@@ -197,7 +199,8 @@ function chart(data, ncolor, ecolor, mtitle, ltitle, lltitle, topn, fontFamily){
 
   /* 节点图例标题 */
   const legend_title = svg.append("g")
-    .attr("class", "legend_title");
+    .attr("class", "legend_title")
+    .style("font-family", fontFamily);
 
   legend_title.append("text")
     .attr("x", (width - rmargin) / 2)             
@@ -207,7 +210,8 @@ function chart(data, ncolor, ecolor, mtitle, ltitle, lltitle, topn, fontFamily){
 
   /* 连线图例标题 */
   const linklegend_title = svg.append("g")
-    .attr("class", "linklegend_title");
+    .attr("class", "linklegend_title")
+    .style("font-family", fontFamily);
 
   linklegend_title.append("text")
     .attr("x", (width - rmargin) / 2)             
