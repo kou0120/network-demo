@@ -1,118 +1,141 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta content="text/html; charset=utf-8">
-    <title>网络图</title>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交互式网络图生成器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="d3.v5.js"></script>
-    <!--<script src="saveSvgAsPng.js"></script>-->
     <script src="color.js"></script>
     <script src="force-chart.js"></script>
-    <style type="text/css">
-
-            /* 主标题 */
-            .title {
-              font: 30px Arial;
-              fill: #00F;
-            }
-
-            /* 节点图例标题 */
-            .legend_title {
-              font: 20px monospace;
-              fill: #958623;
-            }
-
-            /* 连线图例标题 */
-            .linklegend_title {
-              font: 20px monospace;
-              fill: #958623;
-            }
-
-            /* 节点图例标签 */
-            .legend {
-              font: 15px sans-serif;
-              font-style: italic;
-            }
-
-            /* 连线图例标签 */
-            .linklegend {
-              font: 15px sans-serif;
-            }
-
+    <style>
+        .title { font: 30px Arial; fill: #3b82f6; }
+        .legend_title, .linklegend_title { font: 20px monospace; fill: #854d0e; }
+        .legend, .linklegend { font: 15px sans-serif; }
+        #container svg { width: 100%; height: 100%; }
     </style>
-  </head>
-  <body>
-    <table border="0">
-	<tr>
-      <td>JSON: </td>
-      <td><input type='file' id='jsonfile' style="width:300px" /></td>
-    </tr>
-    <tr>
-      <td>Node: </td>
-        <td><select id="nodecolor" value="NPG" style="width:100px">
-          <option value="NPG">NPG</option>
-          <option value="NEJM">NEJM</option>
-          <option value="JAMA">JAMA</option>
-          <option value="Lancet">Lancet</option>
-          <option value="AAAS">AAAS</option>
-          <option value="report">report</option>
-          <option value="DEF">DEF</option>
-        </select></td>
-    </tr>
-    <tr>
-      <td>Link: </td>
-        <td><select id="linkcolor" value="BrBG" style="width:100px">
-          <option value="BrBG">BrBG</option>
-          <option value="PiYG">PiYG</option>
-          <option value="RdBu">RdBu</option>
-          <option value="bl2rd">bl2rd</option>
-          <option value="gnbu">gnbu</option>
-          <option value="matlablike">matlablike</option>
-          <option value="Gwr">Gwr</option>
-          <option value="Bwr">Bwr</option>
-        </select></td>
-    </tr>
-    <tr>
-      <td>Top: </td>
-      <td><input type="number" id="top" placeholder="" value="10" min="1" max="20" style="width:94px" /> (1:20)</td>
-    </tr>
-	</table>
-	<!--<input type='button' id='btnLoad' value='Load' onclick='loadFile();'>-->
-    <div id='container' style="width:880px; height:730px"></div>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">交互式网络图生成器</h1>
+            <p class="text-gray-600">上传 JSON 文件，即刻生成可视化网络图</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- 控制面板 -->
+            <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-md space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">上传 JSON 数据</label>
+                    <input type="file" id="jsonfile" accept=".json" 
+                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"/>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">节点配色 (Node)</label>
+                        <select id="nodecolor" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                            <option value="NPG">NPG</option>
+                            <option value="NEJM">NEJM</option>
+                            <option value="JAMA">JAMA</option>
+                            <option value="Lancet">Lancet</option>
+                            <option value="AAAS">AAAS</option>
+                            <option value="DEF">DEF</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">连线配色 (Link)</label>
+                        <select id="linkcolor" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                            <option value="BrBG">BrBG</option>
+                            <option value="PiYG">PiYG</option>
+                            <option value="RdBu">RdBu</option>
+                            <option value="bl2rd">bl2rd</option>
+                            <option value="gnbu">gnbu</option>
+                            <option value="matlablike">matlablike</option>
+                            <option value="Gwr">Gwr</option>
+                            <option value="Bwr">Bwr</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Top 节点数量 (1-20)</label>
+                        <input type="number" id="top" value="10" min="1" max="20" 
+                            class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-gray-100">
+                    <p class="text-xs text-gray-400">支持 Netlify/Vercel 静态部署</p>
+                </div>
+            </div>
+
+            <!-- 图表容器 -->
+            <div class="lg:col-span-3 bg-white p-4 rounded-xl shadow-md min-h-[600px] flex items-center justify-center relative">
+                <div id="container" class="w-full h-full min-h-[600px]">
+                    <div id="placeholder" class="flex flex-col items-center justify-center h-full text-gray-400">
+                        <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="浸入 9M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <p>请上传 JSON 数据以生成图表</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-	  var mtitle = "Title"; //主标题内容
-      var ltitle1 = "Node"; //节点图例标题内容
-      var ltitle2 = "Link"; //连线图例标题内容
+        var mtitle = "网络关系图";
+        var ltitle1 = "节点类型";
+        var ltitle2 = "权重强度";
+        var currentJson = null;
 
-      function handleFileSelect(evt) {
-	    file = evt.target.files[0];
-        fr = new FileReader();
-        fr.onload = receivedText;
-        fr.readAsText(file);
+        function renderChart() {
+            if (!currentJson) return;
+            
+            const container = d3.select('#container');
+            container.selectAll("svg").remove();
+            document.getElementById('placeholder').style.display = 'none';
 
-        function receivedText(e) {
-          var lines = e.target.result;
-          json = JSON.parse(lines);
-          d3.select('#container').selectAll("svg").remove();
-          var top = document.getElementById("top").value;
-          var nodecolor = document.getElementById("nodecolor").value;
-          var linkcolor = document.getElementById("linkcolor").value;
-          d3.select('#container').append(() => chart(json, window[nodecolor], window[linkcolor], mtitle, ltitle1, ltitle2, top));
+            const top = document.getElementById("top").value;
+            const nodecolor = document.getElementById("nodecolor").value;
+            const linkcolor = document.getElementById("linkcolor").value;
+
+            try {
+                container.append(() => chart(currentJson, window[nodecolor], window[linkcolor], mtitle, ltitle1, ltitle2, top));
+            } catch (err) {
+                console.error("渲染失败:", err);
+                alert("渲染失败，请检查 JSON 格式是否正确");
+            }
         }
-      }
 
-      function paraSelect(e) {
-        d3.select('#container').selectAll("svg").remove();
-        var top = document.getElementById("top").value;
-        var nodecolor = document.getElementById("nodecolor").value;
-        var linkcolor = document.getElementById("linkcolor").value;
-        d3.select('#container').append(() => chart(json, window[nodecolor], window[linkcolor], mtitle, ltitle1, ltitle2, top));
-      }
+        function handleFileSelect(evt) {
+            const file = evt.target.files[0];
+            if (!file) return;
 
-	  document.getElementById('jsonfile').addEventListener('change', handleFileSelect, false);
-	  document.getElementById('top').addEventListener('change', paraSelect, false);
-	  document.getElementById('nodecolor').addEventListener('change', paraSelect, false);
-	  document.getElementById('linkcolor').addEventListener('change', paraSelect, false);
-	
-	</script>
-  </body>
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    currentJson = JSON.parse(e.target.result);
+                    renderChart();
+                } catch (err) {
+                    alert("JSON 解析失败，请上传正确格式的文件");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        document.getElementById('jsonfile').addEventListener('change', handleFileSelect, false);
+        ['top', 'nodecolor', 'linkcolor'].forEach(id => {
+            document.getElementById(id).addEventListener('change', renderChart, false);
+        });
+
+        // 默认尝试加载示例数据（如果存在）
+        fetch('data/demo.json').then(res => res.json()).then(data => {
+            currentJson = data;
+            renderChart();
+        }).catch(e => console.log("未找到默认演示数据"));
+    </script>
+</body>
 </html>
+
