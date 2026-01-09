@@ -2,6 +2,8 @@
 
 这是一个基于 D3.v5 开发的交互式网络图生成器，支持上传 JSON 文件并实时渲染。
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/4a4566e4-aa78-4f89-b494-194b459f1955/deploy-status)](https://app.netlify.com/projects/network-d3-demo/deploys)
+
 ## 功能特点
 - **JSON 文件上传**：通过上传按钮选择本地 JSON 文件。
 - **实时交互**：支持节点拖拽交互。

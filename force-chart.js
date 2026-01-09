@@ -3,7 +3,7 @@ var tmargin = 50;
 var height = 680 + tmargin;
 var width = height + rmargin;
 
-function chart(data, ncolor, ecolor, mtitle, ltitle, lltitle, topn){
+function chart(data, ncolor, ecolor, mtitle, ltitle, lltitle, topn, fontFamily){
 
   var ncount = data.nodes.length;
 
@@ -25,7 +25,8 @@ function chart(data, ncolor, ecolor, mtitle, ltitle, lltitle, topn){
     .force("y", d3.forceY());
 
   const svg = d3.create("svg")
-    .attr("viewBox", [(-width + rmargin) / 2, -(height + tmargin) / 2, width, height]);
+    .attr("viewBox", [(-width + rmargin) / 2, -(height + tmargin) / 2, width, height])
+    .style("font-family", fontFamily);
 
   const link = svg.append("g")
     .attr("class", "links")

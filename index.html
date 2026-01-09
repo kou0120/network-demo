@@ -63,6 +63,50 @@
                         <input type="number" id="top" value="10" min="1" max="20" 
                             class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                     </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">字体选择</label>
+                        <select id="fontFamily" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                            <option value="sans-serif">Sans Serif</option>
+                            <option value="serif">Serif</option>
+                            <option value="monospace">Monospace</option>
+                            <option value="Arial">Arial</option>
+                            <option value="Helvetica">Helvetica</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Georgia">Georgia</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-4 pt-4 border-t border-gray-100">
+                    <h3 class="text-sm font-semibold text-gray-800">标题编辑</h3>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">主标题</label>
+                        <input type="text" id="mtitle" value="网络关系图" 
+                            class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">节点图例标题</label>
+                        <input type="text" id="ltitle1" value="节点类型" 
+                            class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">连线图例标题</label>
+                        <input type="text" id="ltitle2" value="权重强度" 
+                            class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                    </div>
+                </div>
+
+                <div class="space-y-4 pt-4 border-t border-gray-100">
+                    <h3 class="text-sm font-semibold text-gray-800">图片导出</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="downloadSVG" class="flex items-center justify-center px-4 py-2 bg-indigo-50 text-indigo-700 text-sm font-medium rounded-lg hover:bg-indigo-100 transition-colors">
+                            导出 SVG
+                        </button>
+                        <button id="downloadPNG" class="flex items-center justify-center px-4 py-2 bg-blue-50 text-blue-700 text-sm font-medium rounded-lg hover:bg-blue-100 transition-colors">
+                            导出 PNG
+                        </button>
+                    </div>
                 </div>
 
                 <div class="pt-4 border-t border-gray-100">
@@ -85,11 +129,6 @@
     </div>
 
     <script>
-        var mtitle = "网络关系图";
-        var ltitle1 = "节点类型";
-        var ltitle2 = "权重强度";
-        var currentJson = null;
-
         function renderChart() {
             if (!currentJson) return;
             
@@ -100,9 +139,13 @@
             const top = document.getElementById("top").value;
             const nodecolor = document.getElementById("nodecolor").value;
             const linkcolor = document.getElementById("linkcolor").value;
+            const fontFamily = document.getElementById("fontFamily").value;
+            const mtitle = document.getElementById("mtitle").value;
+            const ltitle1 = document.getElementById("ltitle1").value;
+            const ltitle2 = document.getElementById("ltitle2").value;
 
             try {
-                container.append(() => chart(currentJson, window[nodecolor], window[linkcolor], mtitle, ltitle1, ltitle2, top));
+                container.append(() => chart(currentJson, window[nodecolor], window[linkcolor], mtitle, ltitle1, ltitle2, top, fontFamily));
             } catch (err) {
                 console.error("渲染失败:", err);
                 alert("渲染失败，请检查 JSON 格式是否正确");
@@ -126,8 +169,65 @@
         }
 
         document.getElementById('jsonfile').addEventListener('change', handleFileSelect, false);
-        ['top', 'nodecolor', 'linkcolor'].forEach(id => {
-            document.getElementById(id).addEventListener('change', renderChart, false);
+        ['top', 'nodecolor', 'linkcolor', 'fontFamily', 'mtitle', 'ltitle1', 'ltitle2'].forEach(id => {
+            document.getElementById(id).addEventListener('input', renderChart, false);
+        });
+
+        // 导出功能
+        document.getElementById('downloadSVG').addEventListener('click', () => {
+            const svgEl = document.querySelector('#container svg');
+            if (!svgEl) return;
+            
+            const serializer = new XMLSerializer();
+            let source = serializer.serializeToString(svgEl);
+            if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
+                source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+            }
+            if (!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
+                source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+            }
+            source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+            const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "network-chart.svg";
+            link.click();
+        });
+
+        document.getElementById('downloadPNG').addEventListener('click', () => {
+            const svgEl = document.querySelector('#container svg');
+            if (!svgEl) return;
+
+            const dpi = 300;
+            const scale = dpi / 72; // 默认 72 DPI
+            const box = svgEl.viewBox.baseVal;
+            const width = box.width || svgEl.clientWidth;
+            const height = box.height || svgEl.clientHeight;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width * scale;
+            canvas.height = height * scale;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(scale, scale);
+
+            const data = (new XMLSerializer()).serializeToString(svgEl);
+            const win = window.URL || window.webkitURL || window;
+            const img = new Image();
+            const blob = new Blob([data], { type: 'image/svg+xml;charset=utf-8' });
+            const url = win.createObjectURL(blob);
+
+            img.onload = function () {
+                ctx.fillStyle = "white"; // 设置背景颜色
+                ctx.fillRect(0, 0, width, height);
+                ctx.drawImage(img, 0, 0, width, height);
+                const pngUrl = canvas.toDataURL("image/png");
+                const link = document.createElement("a");
+                link.href = pngUrl;
+                link.download = "network-chart.png";
+                link.click();
+                win.revokeObjectURL(url);
+            };
+            img.src = url;
         });
 
         // 默认尝试加载示例数据（如果存在）
