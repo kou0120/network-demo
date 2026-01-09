@@ -4,6 +4,8 @@
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/4a4566e4-aa78-4f89-b494-194b459f1955/deploy-status)](https://app.netlify.com/projects/network-d3-demo/deploys)
 
+[Live Demo on Netlify](https://network-d3-demo.netlify.app)
+
 ## 功能特点
 - **JSON 文件上传**：通过上传按钮选择本地 JSON 文件。
 - **实时交互**：支持节点拖拽交互。
